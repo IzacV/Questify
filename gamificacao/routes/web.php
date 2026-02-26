@@ -33,6 +33,8 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::get('/register', [AuthController::class, 'showRegister']);
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 
+// Pagina inicial
+
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('dashbord');
 })->middleware('auth');
