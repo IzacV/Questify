@@ -1,4 +1,6 @@
 Questify 🎮
+
+
 Questify é uma plataforma de gamificação escolar desenvolvida em Laravel, criada para tornar o ambiente de aprendizado mais engajante e dinâmico. O sistema transforma a rotina da sala de aula em uma experiência gamificada, onde alunos acumulam pontos, sobem em rankings e acompanham seu desempenho em tempo real.
 🚀 Sobre o Projeto
 O Questify foi desenvolvido como projeto escolar para o curso técnico do SENAI, com o objetivo de digitalizar e gamificar a gestão de turmas, atividades e comportamento dos alunos. A plataforma conta com três níveis de acesso — Admin, Instrutor e Aluno — cada um com funcionalidades específicas.
