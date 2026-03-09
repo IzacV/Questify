@@ -262,6 +262,128 @@
             color: rgba(255, 255, 255, 0.65);
         }
 
+        /* SININHO */
+        .notif-btn {
+            position: relative;
+            background: rgba(255,255,255,0.06) !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            padding: 9px 14px !important;
+            font-size: 18px !important;
+            cursor: pointer;
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        .notif-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 160px;
+            width: 340px;
+            background: #0f0c29;
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .notif-dropdown.open {
+            display: flex;
+        }
+
+        .notif-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #a855f7;
+        }
+
+        .notif-marcar-btn {
+            background: none !important;
+            border: none !important;
+            color: rgba(255,255,255,0.4) !important;
+            font-size: 11px !important;
+            cursor: pointer;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: auto !important;
+            font-family: 'Rajdhani', sans-serif !important;
+        }
+
+        .notif-marcar-btn:hover {
+            color: white !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .notif-list {
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .notif-item {
+            padding: 12px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notif-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .notif-item.nao-lida {
+            background: rgba(168,85,247,0.06);
+        }
+
+        .notif-icone {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .notif-texto {
+            font-size: 13px;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.4;
+        }
+
+        .notif-tempo {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            margin-top: 4px;
+        }
+
+        .notif-vazia {
+            padding: 30px;
+            text-align: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 13px;
+        }
+
         @keyframes toastIn {
             from { opacity: 0; transform: translateX(20px); }
             to { opacity: 1; transform: translateX(0); }
@@ -296,6 +418,28 @@
             <a href="/perfil/editar"><button>✏️ Editar Perfil</button></a>
             <a href="/dashboard"><button>🏠 Início</button></a>
             @endif
+
+            {{-- SININHO - só para aluno e instrutor --}}
+            @if(Auth::guard('web')->check() || Auth::guard('instrutor')->check())
+            <div style="position:relative;">
+                <button class="notif-btn" onclick="toggleNotif()" title="Notificações">
+                    🔔
+                    <span class="notif-badge" id="notif-badge">0</span>
+                </button>
+            </div>
+
+            {{-- DROPDOWN DE NOTIFICAÇÕES --}}
+            <div class="notif-dropdown" id="notif-dropdown">
+                <div class="notif-header">
+                    <span>🔔 NOTIFICAÇÕES</span>
+                    <button class="notif-marcar-btn" onclick="marcarTodasLidas()">Marcar todas como lidas</button>
+                </div>
+                <div class="notif-list" id="notif-list">
+                    <div class="notif-vazia">Carregando...</div>
+                </div>
+            </div>
+            @endif
+
             <form method="POST" action="/logout">
                 @csrf
                 <button class="btn-danger">Sair</button>
@@ -368,17 +512,16 @@
             cluster: '{{ env("PUSHER_APP_CLUSTER") }}'
         });
 
+        // Toast
         function showToast(msg, tipo, icone) {
             const colors = {
-                green: { bg: 'rgba(52,211,153,0.15)', border: 'rgba(52,211,153,0.4)', text: '#34d399' },
-                red: { bg: 'rgba(248,113,113,0.15)', border: 'rgba(248,113,113,0.4)', text: '#f87171' },
-                purple: { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)', text: '#a855f7' },
-                blue: { bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.4)', text: '#60a5fa' },
-                info: { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)', text: '#a855f7' },
+                green:  { bg: 'rgba(52,211,153,0.15)',  border: 'rgba(52,211,153,0.4)',  text: '#34d399' },
+                red:    { bg: 'rgba(248,113,113,0.15)', border: 'rgba(248,113,113,0.4)', text: '#f87171' },
+                purple: { bg: 'rgba(168,85,247,0.15)',  border: 'rgba(168,85,247,0.4)',  text: '#a855f7' },
+                blue:   { bg: 'rgba(96,165,250,0.15)',  border: 'rgba(96,165,250,0.4)',  text: '#60a5fa' },
+                info:   { bg: 'rgba(168,85,247,0.15)',  border: 'rgba(168,85,247,0.4)',  text: '#a855f7' },
             };
-
             const c = colors[tipo] || colors.info;
-
             let container = document.getElementById('toast-container');
             if (!container) {
                 container = document.createElement('div');
@@ -386,27 +529,10 @@
                 container.style.cssText = 'position:fixed;top:80px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;';
                 document.body.appendChild(container);
             }
-
             const toast = document.createElement('div');
-            toast.style.cssText = `
-                padding: 14px 18px;
-                border-radius: 10px;
-                background: ${c.bg};
-                border: 1px solid ${c.border};
-                color: ${c.text};
-                font-family: 'Rajdhani', sans-serif;
-                font-size: 14px;
-                max-width: 320px;
-                display: flex;
-                gap: 10px;
-                align-items: flex-start;
-                animation: toastIn 0.3s ease;
-                backdrop-filter: blur(20px);
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            `;
+            toast.style.cssText = `padding:14px 18px;border-radius:10px;background:${c.bg};border:1px solid ${c.border};color:${c.text};font-family:'Rajdhani',sans-serif;font-size:14px;max-width:320px;display:flex;gap:10px;align-items:flex-start;animation:toastIn 0.3s ease;backdrop-filter:blur(20px);box-shadow:0 4px 20px rgba(0,0,0,0.3);`;
             toast.innerHTML = `<span style="font-size:18px;">${icone}</span><span>${msg}</span>`;
             container.appendChild(toast);
-
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateX(20px)';
@@ -415,13 +541,112 @@
             }, 4000);
         }
 
+        // Sininho
+        function toggleNotif() {
+            const dropdown = document.getElementById('notif-dropdown');
+            dropdown.classList.toggle('open');
+            if (dropdown.classList.contains('open')) {
+                carregarNotificacoes();
+            }
+        }
+
+        // Fecha dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notif-dropdown');
+            if (dropdown && !dropdown.contains(e.target) && !e.target.closest('.notif-btn')) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        function tempoRelativo(dateStr) {
+            const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+            if (diff < 60) return 'agora mesmo';
+            if (diff < 3600) return Math.floor(diff/60) + ' min atrás';
+            if (diff < 86400) return Math.floor(diff/3600) + 'h atrás';
+            return Math.floor(diff/86400) + 'd atrás';
+        }
+
+        function carregarNotificacoes() {
+            fetch('/notificacoes')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('notif-list');
+                    const badge = document.getElementById('notif-badge');
+
+                    if (data.length === 0) {
+                        list.innerHTML = '<div class="notif-vazia">✨ Nenhuma notificação nova</div>';
+                        badge.style.display = 'none';
+                        return;
+                    }
+
+                    badge.textContent = data.length;
+                    badge.style.display = 'flex';
+
+                    list.innerHTML = data.map(n => `
+                        <div class="notif-item nao-lida" onclick="marcarLida(${n.id_notificacao}, this)">
+                            <span class="notif-icone">${n.icone}</span>
+                            <div>
+                                <div class="notif-texto">${n.mensagem}</div>
+                                <div class="notif-tempo">${tempoRelativo(n.created_at)}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function marcarLida(id, el) {
+            fetch(`/notificacoes/${id}/lida`, {
+                method: 'PUT',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+            }).then(() => {
+                el.classList.remove('nao-lida');
+                el.style.opacity = '0.4';
+                setTimeout(() => el.remove(), 300);
+                atualizarBadge(-1);
+            });
+        }
+
+        function marcarTodasLidas() {
+            fetch('/notificacoes/todas-lidas', {
+                method: 'PUT',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+            }).then(() => {
+                document.getElementById('notif-list').innerHTML = '<div class="notif-vazia">✨ Nenhuma notificação nova</div>';
+                const badge = document.getElementById('notif-badge');
+                badge.style.display = 'none';
+            });
+        }
+
+        function atualizarBadge(delta) {
+            const badge = document.getElementById('notif-badge');
+            const atual = parseInt(badge.textContent || '0') + delta;
+            if (atual <= 0) {
+                badge.style.display = 'none';
+            } else {
+                badge.textContent = atual;
+                badge.style.display = 'flex';
+            }
+        }
+
+        // Carrega badge ao iniciar
+        @if(Auth::guard('web')->check() || Auth::guard('instrutor')->check())
+        fetch('/notificacoes')
+            .then(r => r.json())
+            .then(data => {
+                const badge = document.getElementById('notif-badge');
+                if (data.length > 0) {
+                    badge.textContent = data.length;
+                    badge.style.display = 'flex';
+                }
+            });
+        @endif
+
         // Canal do aluno
         @if(Auth::guard('web')->check())
         const canalAluno = pusher.subscribe('aluno.{{ Auth::guard("web")->user()->id_aluno }}');
         canalAluno.bind('notificacao', function(data) {
             showToast(data.mensagem, data.tipo, data.icone);
-
-            // Atualiza pontos na sidebar em tempo real
+            atualizarBadge(1);
             if (data.pontos && data.pontos != 0) {
                 const el = document.getElementById('sidebar-pontos');
                 if (el) el.textContent = parseInt(el.textContent) + parseInt(data.pontos);
@@ -434,6 +659,7 @@
         const canalInstrutor = pusher.subscribe('instrutor.{{ Auth::guard("instrutor")->user()->id_instrutor }}');
         canalInstrutor.bind('notificacao', function(data) {
             showToast(data.mensagem, data.tipo, data.icone);
+            atualizarBadge(1);
         });
         @endif
     </script>

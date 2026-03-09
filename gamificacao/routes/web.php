@@ -10,6 +10,7 @@ use App\Http\Controllers\AtividadeController;
 use App\Http\Controllers\ComportamentoController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ChamadaController;
+use App\Http\Controllers\NotificacaoController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -124,6 +125,13 @@ Route::middleware('auth:web')->group(function () {
 Route::middleware('auth:instrutor')->group(function () {
     Route::get('/perfil/instrutor/editar', [PerfilController::class, 'editInstrutor']);
     Route::put('/perfil/instrutor', [PerfilController::class, 'updateInstrutor']);
+});
+
+// Notificações (aluno e instrutor)
+Route::middleware('auth:web,instrutor')->group(function () {
+    Route::get('/notificacoes', [NotificacaoController::class, 'index']);
+    Route::put('/notificacoes/todas-lidas', [NotificacaoController::class, 'marcarTodasLidas']);
+    Route::put('/notificacoes/{id}/lida', [NotificacaoController::class, 'marcarLida']);
 });
 
 // Admin

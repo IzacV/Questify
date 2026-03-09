@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\Comportamento;
 use App\Models\Aluno;
 use Illuminate\Support\Facades\Auth;
-use App\Events\NotificacaoAluno;
+use App\Helpers\Notificar;
 
 class ComportamentoController extends Controller
 {
@@ -34,23 +34,23 @@ class ComportamentoController extends Controller
             'pontos_comportamento' => $aluno->pontos_comportamento + $request->pontos
         ]);
 
-        // Notifica o aluno via Pusher
+        // Notifica o aluno
         if ($request->pontos < 0) {
-            event(new NotificacaoAluno(
+            Notificar::aluno(
                 $aluno->id_aluno,
-                'O instrutor registrou comportamento negativo: <strong>"' . $request->motivo . '"</strong> (' . $request->pontos . ' pts)',
+                'Comportamento negativo registrado: "' . $request->motivo . '" (' . $request->pontos . ' pts)',
                 'red',
                 '😤',
                 $request->pontos
-            ));
+            );
         } else {
-            event(new NotificacaoAluno(
+            Notificar::aluno(
                 $aluno->id_aluno,
-                'O instrutor registrou comportamento positivo: <strong>"' . $request->motivo . '"</strong> (+' . $request->pontos . ' pts)',
+                'Comportamento positivo registrado: "' . $request->motivo . '" (+' . $request->pontos . ' pts)',
                 'green',
                 '😊',
                 $request->pontos
-            ));
+            );
         }
 
         return back()->with('success', 'Comportamento registrado com sucesso!');

@@ -6,8 +6,7 @@ use App\Models\Atividade;
 use App\Models\Entrega;
 use App\Models\Aluno;
 use Illuminate\Support\Facades\Auth;
-use App\Events\NotificacaoAluno;
-use App\Events\NotificacaoInstrutor;
+use App\Helpers\Notificar;
 
 class AtividadeController extends Controller
 {
@@ -53,16 +52,16 @@ class AtividadeController extends Controller
             'data_limite' => $request->data_limite,
         ]);
 
-        // Notifica todos os alunos do turno via Pusher
+        // Notifica todos os alunos do turno
         $alunos = Aluno::where('turno', $atividade->turno)->get();
         foreach ($alunos as $aluno) {
-            event(new NotificacaoAluno(
+            Notificar::aluno(
                 $aluno->id_aluno,
-                'Nova atividade disponível: <strong>"' . $atividade->titulo . '"</strong> — ' . $atividade->pontos . ' pts',
+                'Nova atividade disponível: "' . $atividade->titulo . '" — ' . $atividade->pontos . ' pts',
                 'purple',
                 '📚',
                 0
-            ));
+            );
         }
 
         return redirect('/atividades')->with('success', 'Atividade criada com sucesso!');
@@ -91,14 +90,14 @@ class AtividadeController extends Controller
         $pontos = $entrega->atividade->pontos;
         $aluno->update(['pontos' => $aluno->pontos + $pontos]);
 
-        // Notifica o aluno via Pusher
-        event(new NotificacaoAluno(
+        // Notifica o aluno
+        Notificar::aluno(
             $aluno->id_aluno,
-            'Sua entrega da atividade <strong>"' . $entrega->atividade->titulo . '"</strong> foi confirmada! +' . $pontos . ' pts',
+            'Sua entrega de "' . $entrega->atividade->titulo . '" foi confirmada! +' . $pontos . ' pts',
             'green',
             '✅',
             $pontos
-        ));
+        );
 
         return back()->with('success', 'Entrega confirmada e pontos adicionados!');
     }
@@ -143,14 +142,14 @@ class AtividadeController extends Controller
             'presenca' => false,
         ]);
 
-        // Notifica o instrutor via Pusher
+        // Notifica o instrutor
         $atividade = Atividade::findOrFail($id);
-        event(new NotificacaoInstrutor(
+        Notificar::instrutor(
             $atividade->fk_id_instrutor,
-            'O aluno <strong>"' . $aluno->nome . '"</strong> entregou a atividade <strong>"' . $atividade->titulo . '"</strong>',
+            'O aluno "' . $aluno->nome . '" entregou a atividade "' . $atividade->titulo . '"',
             'blue',
             '📝'
-        ));
+        );
 
         return back()->with('success', 'Atividade marcada como entregue!');
     }
