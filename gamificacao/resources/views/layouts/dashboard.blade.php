@@ -261,6 +261,11 @@
             font-size: 12px;
             color: rgba(255, 255, 255, 0.65);
         }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
     @yield('styles')
 </head>
@@ -336,15 +341,15 @@
             <div class="sidebar-divider"></div>
             <div class="sidebar-stat">
                 <span class="sidebar-stat-label">⭐ Pontos</span>
-                <span class="sidebar-stat-value">{{ $usuario->pontos }}</span>
+                <span class="sidebar-stat-value" id="sidebar-pontos">{{ $usuario->pontos }}</span>
             </div>
             <div class="sidebar-stat">
                 <span class="sidebar-stat-label">😊 Comportamento</span>
-                <span class="sidebar-stat-value">{{ $usuario->pontos_comportamento }}</span>
+                <span class="sidebar-stat-value" id="sidebar-comportamento">{{ $usuario->pontos_comportamento }}</span>
             </div>
             <div class="sidebar-stat">
                 <span class="sidebar-stat-label">📅 Frequência</span>
-                <span class="sidebar-stat-value">{{ $usuario->frequencia }}</span>
+                <span class="sidebar-stat-value" id="sidebar-frequencia">{{ $usuario->frequencia }}</span>
             </div>
             @endif
         </div>
@@ -355,6 +360,83 @@
         </div>
 
     </div>
+
+    {{-- PUSHER --}}
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script>
+        const pusher = new Pusher('{{ env("PUSHER_APP_KEY") }}', {
+            cluster: '{{ env("PUSHER_APP_CLUSTER") }}'
+        });
+
+        function showToast(msg, tipo, icone) {
+            const colors = {
+                green: { bg: 'rgba(52,211,153,0.15)', border: 'rgba(52,211,153,0.4)', text: '#34d399' },
+                red: { bg: 'rgba(248,113,113,0.15)', border: 'rgba(248,113,113,0.4)', text: '#f87171' },
+                purple: { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)', text: '#a855f7' },
+                blue: { bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.4)', text: '#60a5fa' },
+                info: { bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.4)', text: '#a855f7' },
+            };
+
+            const c = colors[tipo] || colors.info;
+
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = 'position:fixed;top:80px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                padding: 14px 18px;
+                border-radius: 10px;
+                background: ${c.bg};
+                border: 1px solid ${c.border};
+                color: ${c.text};
+                font-family: 'Rajdhani', sans-serif;
+                font-size: 14px;
+                max-width: 320px;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                animation: toastIn 0.3s ease;
+                backdrop-filter: blur(20px);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            toast.innerHTML = `<span style="font-size:18px;">${icone}</span><span>${msg}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Canal do aluno
+        @if(Auth::guard('web')->check())
+        const canalAluno = pusher.subscribe('aluno.{{ Auth::guard("web")->user()->id_aluno }}');
+        canalAluno.bind('notificacao', function(data) {
+            showToast(data.mensagem, data.tipo, data.icone);
+
+            // Atualiza pontos na sidebar em tempo real
+            if (data.pontos && data.pontos != 0) {
+                const el = document.getElementById('sidebar-pontos');
+                if (el) el.textContent = parseInt(el.textContent) + parseInt(data.pontos);
+            }
+        });
+        @endif
+
+        // Canal do instrutor
+        @if(Auth::guard('instrutor')->check())
+        const canalInstrutor = pusher.subscribe('instrutor.{{ Auth::guard("instrutor")->user()->id_instrutor }}');
+        canalInstrutor.bind('notificacao', function(data) {
+            showToast(data.mensagem, data.tipo, data.icone);
+        });
+        @endif
+    </script>
 
 </body>
 

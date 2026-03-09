@@ -11,8 +11,8 @@ class AdminSeeder extends Seeder
     {
         Admin::create([
             'nome' => 'Admin',
-            'email' => 'admin@questify.com',
-            'senha' => Hash::make('admin123')
+            'email' => 'professor@questify.com',
+            'senha' => Hash::make('123456')
         ]);
     }
 }

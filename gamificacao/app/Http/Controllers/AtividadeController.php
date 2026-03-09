@@ -6,6 +6,8 @@ use App\Models\Atividade;
 use App\Models\Entrega;
 use App\Models\Aluno;
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificacaoAluno;
+use App\Events\NotificacaoInstrutor;
 
 class AtividadeController extends Controller
 {
@@ -42,7 +44,7 @@ class AtividadeController extends Controller
             $id_instrutor = Auth::guard('instrutor')->user()->id_instrutor;
         }
 
-        Atividade::create([
+        $atividade = Atividade::create([
             'fk_id_instrutor' => $id_instrutor,
             'titulo' => $request->titulo,
             'descricao' => $request->descricao,
@@ -50,6 +52,18 @@ class AtividadeController extends Controller
             'turno' => $request->turno,
             'data_limite' => $request->data_limite,
         ]);
+
+        // Notifica todos os alunos do turno via Pusher
+        $alunos = Aluno::where('turno', $atividade->turno)->get();
+        foreach ($alunos as $aluno) {
+            event(new NotificacaoAluno(
+                $aluno->id_aluno,
+                'Nova atividade disponível: <strong>"' . $atividade->titulo . '"</strong> — ' . $atividade->pontos . ' pts',
+                'purple',
+                '📚',
+                0
+            ));
+        }
 
         return redirect('/atividades')->with('success', 'Atividade criada com sucesso!');
     }
@@ -74,7 +88,18 @@ class AtividadeController extends Controller
         $entrega = Entrega::findOrFail($id);
         $entrega->update(['status' => 'confirmado']);
         $aluno = Aluno::findOrFail($entrega->fk_id_aluno);
-        $aluno->update(['pontos' => $aluno->pontos + $entrega->atividade->pontos]);
+        $pontos = $entrega->atividade->pontos;
+        $aluno->update(['pontos' => $aluno->pontos + $pontos]);
+
+        // Notifica o aluno via Pusher
+        event(new NotificacaoAluno(
+            $aluno->id_aluno,
+            'Sua entrega da atividade <strong>"' . $entrega->atividade->titulo . '"</strong> foi confirmada! +' . $pontos . ' pts',
+            'green',
+            '✅',
+            $pontos
+        ));
+
         return back()->with('success', 'Entrega confirmada e pontos adicionados!');
     }
 
@@ -96,6 +121,7 @@ class AtividadeController extends Controller
                 'pontos' => $aluno->pontos + 2,
             ]);
         }
+
         return back()->with('success', 'Presença atualizada!');
     }
 
@@ -116,6 +142,15 @@ class AtividadeController extends Controller
             'status' => 'entregue',
             'presenca' => false,
         ]);
+
+        // Notifica o instrutor via Pusher
+        $atividade = Atividade::findOrFail($id);
+        event(new NotificacaoInstrutor(
+            $atividade->fk_id_instrutor,
+            'O aluno <strong>"' . $aluno->nome . '"</strong> entregou a atividade <strong>"' . $atividade->titulo . '"</strong>',
+            'blue',
+            '📝'
+        ));
 
         return back()->with('success', 'Atividade marcada como entregue!');
     }
