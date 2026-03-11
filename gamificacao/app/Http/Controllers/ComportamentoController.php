@@ -51,6 +51,9 @@ class ComportamentoController extends Controller
                 '😊',
                 $request->pontos
             );
+
+            // Verifica badges só quando comportamento positivo
+            Notificar::verificarBadges($aluno->fresh());
         }
 
         return back()->with('success', 'Comportamento registrado com sucesso!');

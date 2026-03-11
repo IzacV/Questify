@@ -99,29 +99,10 @@ class AtividadeController extends Controller
             $pontos
         );
 
+        // Verifica badges
+        Notificar::verificarBadges($aluno->fresh());
+
         return back()->with('success', 'Entrega confirmada e pontos adicionados!');
-    }
-
-    public function marcarPresenca(Request $request, $id)
-    {
-        $entrega = Entrega::findOrFail($id);
-        $aluno = Aluno::findOrFail($entrega->fk_id_aluno);
-
-        if ($entrega->presenca) {
-            $entrega->update(['presenca' => false]);
-            $aluno->update([
-                'frequencia' => max(0, $aluno->frequencia - 1),
-                'pontos' => max(0, $aluno->pontos - 2),
-            ]);
-        } else {
-            $entrega->update(['presenca' => true]);
-            $aluno->update([
-                'frequencia' => $aluno->frequencia + 1,
-                'pontos' => $aluno->pontos + 2,
-            ]);
-        }
-
-        return back()->with('success', 'Presença atualizada!');
     }
 
     public function entregar($id)
@@ -141,6 +122,9 @@ class AtividadeController extends Controller
             'status' => 'entregue',
             'presenca' => false,
         ]);
+
+        // Verifica badges por atividades entregues
+        Notificar::verificarBadges($aluno->fresh());
 
         // Notifica o instrutor
         $atividade = Atividade::findOrFail($id);

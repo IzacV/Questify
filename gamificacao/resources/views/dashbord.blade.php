@@ -69,6 +69,77 @@
     .atividade-desc { font-size: 12px; opacity: 0.6; margin-bottom: 8px; }
     .atividade-pts { font-size: 12px; color: #a855f7; margin-bottom: 4px; }
     .atividade-data { font-size: 11px; opacity: 0.5; margin-bottom: 12px; }
+
+    /* BADGES */
+    .badges-section {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 20px;
+    }
+    .badges-section h3 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 13px;
+        color: #a855f7;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+    .badges-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .badge-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.04);
+        width: 80px;
+        cursor: default;
+        transition: transform 0.2s;
+        position: relative;
+    }
+    .badge-item:hover { transform: translateY(-3px); }
+    .badge-item .badge-icone { font-size: 28px; }
+    .badge-item .badge-nome {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 9px;
+        text-align: center;
+        color: white;
+        line-height: 1.2;
+    }
+    .badge-item .badge-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 110%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e1b4b;
+        border: 1px solid rgba(168,85,247,0.4);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 11px;
+        color: white;
+        width: 140px;
+        text-align: center;
+        z-index: 10;
+        white-space: normal;
+    }
+    .badge-item:hover .badge-tooltip { display: block; }
+    .badge-bloqueado {
+        opacity: 0.25;
+        filter: grayscale(1);
+    }
+    .badges-vazio {
+        font-size: 13px;
+        opacity: 0.4;
+        text-align: center;
+        padding: 10px 0;
+    }
 </style>
 @endsection
 @section('content')
@@ -98,7 +169,12 @@
                 </div>
             </div>
         @else
-            @php $usuario = Auth::guard('web')->user(); @endphp
+            @php
+                $usuario = Auth::guard('web')->user();
+                $meusBadges = \App\Models\AlunoBadge::where('fk_id_aluno', $usuario->id_aluno)
+                    ->pluck('fk_id_badge')->toArray();
+                $todosBadges = \App\Models\Badge::all();
+            @endphp
             <h2 style="font-family: 'Orbitron', sans-serif; color: #a855f7; font-size: 20px;">Meu Painel</h2>
 
             {{-- RANKINGS ROTATIVOS --}}
@@ -150,6 +226,33 @@
                     document.getElementById(rankingIds[rankAtual]).style.display = 'block';
                 }, 5000);
             </script>
+
+            {{-- BADGES --}}
+            <div class="badges-section">
+                <h3>🏅 MEUS BADGES — {{ count($meusBadges) }}/{{ $todosBadges->count() }}</h3>
+                @if($todosBadges->isEmpty())
+                    <div class="badges-vazio">Nenhum badge disponível ainda.</div>
+                @else
+                <div class="badges-grid">
+                    @foreach($todosBadges as $badge)
+                    @php $conquistado = in_array($badge->id_badge, $meusBadges); @endphp
+                    <div class="badge-item {{ $conquistado ? '' : 'badge-bloqueado' }}" style="border-color: {{ $conquistado ? $badge->cor : 'rgba(255,255,255,0.1)' }};">
+                        <span class="badge-icone">{{ $badge->icone }}</span>
+                        <span class="badge-nome" style="color: {{ $conquistado ? $badge->cor : 'white' }};">{{ $badge->nome }}</span>
+                        <div class="badge-tooltip">
+                            <strong>{{ $badge->nome }}</strong><br>
+                            {{ $badge->descricao }}<br>
+                            @if(!$conquistado)
+                                <span style="color: #f87171; font-size: 10px;">🔒 Bloqueado</span>
+                            @else
+                                <span style="color: #34d399; font-size: 10px;">✅ Conquistado!</span>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
         @endif
     </div>
 

@@ -100,7 +100,6 @@ Route::middleware('auth:instrutor,admin')->group(function () {
     Route::delete('/atividades/{id}', [AtividadeController::class, 'destroy']);
     Route::get('/atividades/{id}/entregas', [AtividadeController::class, 'entregas']);
     Route::post('/entregas/{id}/confirmar', [AtividadeController::class, 'confirmar']);
-    Route::post('/entregas/{id}/presenca', [AtividadeController::class, 'marcarPresenca']);
     Route::post('/comportamento', [ComportamentoController::class, 'store']);
 });
 

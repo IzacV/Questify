@@ -403,20 +403,20 @@
         @endif
         <div class="topbar-nav">
             @if(Auth::guard('admin')->check())
-            <a href="/turmas"><button class="btn-admin">🏫 Turmas</button></a>
-            <a href="/alunos"><button class="btn-admin">👨‍🎓 Alunos</button></a>
-            <a href="/atividades"><button class="btn-admin">📚 Atividades</button></a>
-            <a href="/admin/instrutores"><button class="btn-admin">👨‍🏫 Instrutores</button></a>
             <a href="/admin/dashboard"><button class="btn-admin">🏠 Início</button></a>
+            <a href="/atividades"><button class="btn-admin">📚 Atividades</button></a>
+            <a href="/alunos"><button class="btn-admin">👨‍🎓 Alunos</button></a>
+            <a href="/admin/instrutores"><button class="btn-admin">👨‍🏫 Instrutores</button></a>
+            <a href="/turmas"><button class="btn-admin">🏫 Turmas</button></a>
             @elseif(Auth::guard('instrutor')->check())
+            <a href="/dashboard"><button>🏠 Início</button></a>
+            <a href="/perfil/instrutor/editar"><button>✏️ Perfil</button></a>
             <a href="/turmas"><button>🏫 Turmas</button></a>
             <a href="/alunos"><button>👨‍🎓 Alunos</button></a>
             <a href="/atividades"><button>📚 Atividades</button></a>
-            <a href="/perfil/instrutor/editar"><button>✏️ Perfil</button></a>
-            <a href="/dashboard"><button>🏠 Início</button></a>
             @else
-            <a href="/perfil/editar"><button>✏️ Editar Perfil</button></a>
             <a href="/dashboard"><button>🏠 Início</button></a>
+            <a href="/perfil/editar"><button>✏️ Editar Perfil</button></a>
             @endif
 
             {{-- SININHO - só para aluno e instrutor --}}
