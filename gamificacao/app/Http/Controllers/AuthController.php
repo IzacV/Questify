@@ -36,6 +36,9 @@ class AuthController extends Controller
         $admin = \App\Models\Admin::where('email', $email)->first();
         if ($admin && Hash::check($password, $admin->senha)) {
             Auth::guard('admin')->login($admin);
+            activity()
+                ->causedBy($admin)
+                ->log('Admin "' . $admin->nome . '" fez login no sistema');
             return redirect('/admin/dashboard');
         }
 
@@ -43,6 +46,9 @@ class AuthController extends Controller
         $aluno = Aluno::where('email', $email)->first();
         if ($aluno && Hash::check($password, $aluno->senha)) {
             Auth::guard('web')->login($aluno);
+            activity()
+                ->causedBy($aluno)
+                ->log('Aluno "' . $aluno->nome . '" fez login no sistema');
             return redirect('/dashboard');
         }
 
@@ -50,15 +56,21 @@ class AuthController extends Controller
         $instrutor = Instrutor::where('email', $email)->first();
         if ($instrutor && Hash::check($password, $instrutor->senha)) {
             Auth::guard('instrutor')->login($instrutor);
+            activity()
+                ->causedBy($instrutor)
+                ->log('Instrutor "' . $instrutor->nome . '" fez login no sistema');
             return redirect('/dashboard');
         }
+
+        // Log tentativa falha
+        activity()
+            ->log('Tentativa de login falhou para o email: ' . $email . ' — IP: ' . $request->ip());
 
         return back()->withErrors([
             'email' => 'Email ou senha inválidos.'
         ]);
     }
 
-    // CADASTRAR ALUNO
     public function register(Request $request)
     {
         $request->validate([
@@ -76,7 +88,7 @@ class AuthController extends Controller
 
         $turma = \App\Models\Turma::findOrFail($request->fk_id_turma);
 
-        Aluno::create([
+        $aluno = Aluno::create([
             'nome' => $request->nome,
             'email' => $request->email,
             'senha' => Hash::make($request->senha),
@@ -85,12 +97,26 @@ class AuthController extends Controller
             'foto' => $fotoPath,
         ]);
 
+        // Log
+        activity()
+            ->causedBy($aluno)
+            ->log('Novo aluno cadastrado: "' . $aluno->nome . '" — Turma: ' . $turma->nome . ' — Turno: ' . $turma->turno);
+
         return redirect('/login')->with('success', 'Conta criada com sucesso!');
     }
 
-    // LOGOUT
     public function logout()
     {
+        $usuario = Auth::guard('web')->user()
+            ?? Auth::guard('instrutor')->user()
+            ?? Auth::guard('admin')->user();
+
+        if ($usuario) {
+            activity()
+                ->causedBy($usuario)
+                ->log('"' . $usuario->nome . '" fez logout do sistema');
+        }
+
         Auth::guard('web')->logout();
         Auth::guard('instrutor')->logout();
         Auth::guard('admin')->logout();

@@ -52,6 +52,12 @@ class AtividadeController extends Controller
             'data_limite' => $request->data_limite,
         ]);
 
+        // Log
+        $usuario = Auth::guard('admin')->user() ?? Auth::guard('instrutor')->user();
+        activity()
+            ->causedBy($usuario)
+            ->log('Instrutor "' . $usuario->nome . '" criou a atividade "' . $atividade->titulo . '" — ' . $atividade->pontos . ' pts — Turno: ' . $atividade->turno);
+
         // Notifica todos os alunos do turno
         $alunos = Aluno::where('turno', $atividade->turno)->get();
         foreach ($alunos as $aluno) {
@@ -70,6 +76,13 @@ class AtividadeController extends Controller
     public function destroy($id)
     {
         $atividade = Atividade::findOrFail($id);
+
+        // Log
+        $usuario = Auth::guard('admin')->user() ?? Auth::guard('instrutor')->user();
+        activity()
+            ->causedBy($usuario)
+            ->log('Atividade "' . $atividade->titulo . '" foi deletada por "' . $usuario->nome . '"');
+
         $atividade->delete();
         return redirect('/atividades')->with('success', 'Atividade deletada com sucesso!');
     }
@@ -89,6 +102,12 @@ class AtividadeController extends Controller
         $aluno = Aluno::findOrFail($entrega->fk_id_aluno);
         $pontos = $entrega->atividade->pontos;
         $aluno->update(['pontos' => $aluno->pontos + $pontos]);
+
+        // Log
+        $usuario = Auth::guard('admin')->user() ?? Auth::guard('instrutor')->user();
+        activity()
+            ->causedBy($usuario)
+            ->log('Entrega de "' . $aluno->nome . '" na atividade "' . $entrega->atividade->titulo . '" confirmada — +' . $pontos . ' pts');
 
         // Notifica o aluno
         Notificar::aluno(
@@ -122,6 +141,11 @@ class AtividadeController extends Controller
             'status' => 'entregue',
             'presenca' => false,
         ]);
+
+        // Log
+        activity()
+            ->causedBy($aluno)
+            ->log('Aluno "' . $aluno->nome . '" entregou a atividade "' . Atividade::findOrFail($id)->titulo . '"');
 
         // Verifica badges por atividades entregues
         Notificar::verificarBadges($aluno->fresh());

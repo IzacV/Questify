@@ -136,6 +136,7 @@ Route::middleware('auth:web,instrutor')->group(function () {
 // Admin
 Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+    Route::get('/admin/logs', [AdminController::class, 'logs']);
     Route::get('/admin/instrutores', [AdminController::class, 'instrutores']);
     Route::post('/admin/instrutores', [AdminController::class, 'criarInstrutor']);
     Route::delete('/admin/instrutores/{id}', [AdminController::class, 'deletarInstrutor']);

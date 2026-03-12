@@ -34,6 +34,12 @@ class ComportamentoController extends Controller
             'pontos_comportamento' => $aluno->pontos_comportamento + $request->pontos
         ]);
 
+        // Log
+        $tipo = $request->pontos < 0 ? 'negativo' : 'positivo';
+        activity()
+            ->causedBy($instrutor)
+            ->log('Instrutor "' . $instrutor->nome . '" registrou comportamento ' . $tipo . ' para "' . $aluno->nome . '": "' . $request->motivo . '" (' . $request->pontos . ' pts)');
+
         // Notifica o aluno
         if ($request->pontos < 0) {
             Notificar::aluno(
