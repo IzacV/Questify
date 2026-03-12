@@ -19,20 +19,10 @@
     <form method="POST" action="/turmas" style="max-width: 500px;">
         @csrf
         <div class="input-group">
-            <input
-                type="text"
-                name="nome"
-                placeholder="Nome da Turma"
-                required
-            >
+            <input type="text" name="nome" placeholder="Nome da Turma" required>
         </div>
         <div class="input-group">
-            <input
-                type="text"
-                name="sala"
-                placeholder="Sala"
-                required
-            >
+            <input type="text" name="sala" placeholder="Sala" required>
         </div>
         <div class="input-group">
             <select name="turno" required style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: white; outline: none;">
@@ -42,6 +32,18 @@
                 <option value="Noite" style="background: #1e1b4b;">Noite</option>
             </select>
         </div>
+
+        {{-- Admin precisa selecionar o instrutor --}}
+        @if(Auth::guard('admin')->check())
+        <div class="input-group">
+            <select name="fk_id_instrutor" required style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: white; outline: none;">
+                <option value="" style="background: #1e1b4b;">Selecione o Instrutor</option>
+                @foreach(\App\Models\Instrutor::all() as $instrutor)
+                <option value="{{ $instrutor->id_instrutor }}" style="background: #1e1b4b;">{{ $instrutor->nome }}</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
 
         <button type="submit">CRIAR TURMA</button>
 
