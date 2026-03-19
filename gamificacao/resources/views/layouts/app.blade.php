@@ -125,12 +125,14 @@
         transition: all 0.3s ease;
         backdrop-filter: blur(8px);
         user-select: none;
+
     }
 
     .theme-toggle:hover {
         background: var(--toggle-hover-bg);
         transform: translateY(-1px);
     }
+
 
     .theme-toggle .toggle-icon {
         font-size: 16px;
@@ -311,6 +313,7 @@
         transition: all 0.4s ease;
     }
 
+
     select {
         color: var(--text-color);
     }
@@ -324,6 +327,7 @@
         background: #ffffff;
         color: #0f172a;
     }
+
 
     /* =====================
        RESPONSIVE
