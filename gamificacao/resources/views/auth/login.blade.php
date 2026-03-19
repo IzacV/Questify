@@ -6,8 +6,7 @@
 
 <div class="container">
 
-    <button id="theme-toggle">🌙</button>
-
+    
     <div class="login-box">
         <h2>SIGN IN</h2>
 
