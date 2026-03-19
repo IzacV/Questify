@@ -53,6 +53,7 @@
         --login-bg: rgba(239,246,255,0.7);
         --heading-color: #1d4ed8;
         --text-color: #0f172a;
+        --input-color: rgb(0, 0, 0);
         --input-bg: rgba(255,255,255,0.9);
         --input-border: rgba(59,130,246,0.3);
         --input-border-focus: #2563eb;
@@ -124,12 +125,14 @@
         transition: all 0.3s ease;
         backdrop-filter: blur(8px);
         user-select: none;
+
     }
 
     .theme-toggle:hover {
         background: var(--toggle-hover-bg);
         transform: translateY(-1px);
     }
+
 
     .theme-toggle .toggle-icon {
         font-size: 16px;
@@ -309,6 +312,22 @@
         font-size: 14px;
         transition: all 0.4s ease;
     }
+
+
+    select {
+        color: var(--text-color);
+    }
+
+    select option {
+        background: #1e1b4b;
+        color: white;
+    }
+
+    [data-theme="light"] select option {
+        background: #ffffff;
+        color: #0f172a;
+    }
+
 
     /* =====================
        RESPONSIVE
